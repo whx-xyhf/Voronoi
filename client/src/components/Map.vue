@@ -12,7 +12,7 @@
         </svg>
     </div>
     <div class="dataInfo">
-        <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Origin Nodes:{{originData.data?originData.data.length:0}}</div>
+        <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Origin Nodes:{{originData?originData.length:0}}</div>
         <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Sampling Nodes:{{samplingData.length}}</div>
         <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Final Clusters:{{max_label}}</div>
     </div>
@@ -615,9 +615,9 @@ export default {
         this.mapColor();
       }
     },
-    currentColorMapMethod(){
-      this.mapColor();
-    },
+    // currentColorMapMethod(){
+    //   this.mapColor();
+    // },
     voronoiPolygons(){
       this.paintVoronoi(this.voronoiPolygons,this.hull);
       // this.drawColorMap(this.colorMap);

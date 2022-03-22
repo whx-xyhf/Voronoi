@@ -5,7 +5,7 @@ from jenkspy import JenksNaturalBreaks
 from sampling.sample_bns import apply_bns
 from sampling.sample_super import apply_super_bns
 import random
-import alphashape
+from sklearn.cluster import KMeans
 
 globalConfig = {'jnb': None, 'values': [], 'hull': []}
 
@@ -28,49 +28,41 @@ def upload_file():
     return res
 
 
-@app.route("/get_origin_data", methods=['POST', 'GET'])
+@app.route("/get_origin_data", methods=['POST'])
 def get_origin_data():
-    if request.method == 'POST':
-        file_name = request.get_json()['fileName']
-        with open(f'./data/{file_name}.json', 'r') as fr:
-            data = json.load(fr)
-        # points = []
-        values = []
-        for i in data:
-            # points.append([i['lng'], i['lat']])
-            values.append(i['value'])
-        globalConfig['values'] = values
-        # shape = alphashape.alphashape(points, 15)
-        # hull = [[x, y] for x, y in shape.exterior.coords]
-        hull = []
-        out = {'data': data, 'hull': hull}
-        globalConfig['hull'] = hull
-        res = make_response(jsonify({'code': 200, 'data': out}))
+    file_name = request.get_json()['fileName']
+    with open(f'./data/{file_name}.json', 'r') as fr:
+        data = json.load(fr)
+    # points = []
+    values = []
+    for i in data:
+        # points.append([i['lng'], i['lat']])
+        values.append(i['value'])
+    globalConfig['values'] = values
+    # shape = alphashape.alphashape(points, 15)
+    # hull = [[x, y] for x, y in shape.exterior.coords]
+    hull = []
+    out = {'data': data, 'hull': hull}
+    globalConfig['hull'] = hull
+    res = make_response(jsonify({'code': 200, 'data': out}))
     return res
 
 
-@app.route("/get_cluster_data", methods=['POST', 'GET'])
+@app.route("/get_cluster_data", methods=['POST'])
 def get_cluster_data():
-    if request.method == 'POST':
-        file_name = request.get_json()['fileName']
-        n_cluster = request.get_json()['n_cluster']
-        color_count = request.get_json()['color_count']
-        with open(f'./data/{file_name}$class={n_cluster}.json', 'r') as fr:
-            data = json.load(fr)
-        # cluster_value_dic = {}
-        # cluster_value_array = []
-        # for i in data:
-        #     temp = cluster_value_dic.get(i['label'], [])
-        #     temp.append(i['value'])
-        #     cluster_value_dic[i['label']] = temp
-        # for i in cluster_value_dic:
-        #     cluster_value_array.append(sum(cluster_value_dic[i])/len(cluster_value_dic[i]))
-        # jnb = JenksNaturalBreaks(nb_class=color_count)
-        # jnb.fit(cluster_value_array)
-        # globalConfig['jnb'] = jnb
-        # for i in range(len(data)):
-        #     data[i]['label'] = int(jnb.predict(data[i]['value']))
-        res = make_response(jsonify({'code': 200, 'data': {'data': data, 'hull': globalConfig['hull']}}))
+    values = request.get_json()['originData']
+    n_cluster = request.get_json()['n_cluster']
+    method = request.get_json()['method']
+    labels = []
+    if method == 'K-Means':
+        km = KMeans(n_clusters=n_cluster).fit(np.array(values).reshape(-1, 1))
+        labels = [int(i) for i in km.labels_]
+    elif method == 'N-Breaks':
+        jnb = JenksNaturalBreaks(nb_class=n_cluster)
+        jnb.fit(values)
+        labels = [int(i) for i in jnb.labels_]
+    print(labels)
+    res = make_response(jsonify({'code': 200, 'data': {'labels': labels}}))
     return res
 
 

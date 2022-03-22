@@ -4,18 +4,26 @@
         <input type="file" name="" id="fileInput" @change="uploadFile($event)">
 
          <div class="sliderBox">
-            <div class="sliderTitle el-icon-arrow-down">&nbsp;&nbsp;Clustering &nbsp;</div>  <div class=" runIcon el-icon-video-play" title="Run" @click="clustering"></div>
+            <div class="sliderTitle el-icon-arrow-down">&nbsp;&nbsp;Data Propressing &nbsp;</div>  <div class=" runIcon el-icon-video-play" title="Run" @click="clustering"></div>
             
             <div class="sliderItem">
-                <div class="demonstration">N-cluster:</div>
+                <div class="demonstration">Number of Tntervals:</div>
                 <el-slider v-model="n_cluster" :show-tooltip="false" :style="{width:'40%',float:'left'}" :step="1" :max="16" :min="4" ></el-slider>
                 <div class="sliderValue" contenteditable="true" id="n_cluster">{{n_cluster}}</div>
             </div>
             <div class="sliderItem">
-                <div class="demonstration">Eps:</div>
-                <el-slider v-model="eps" :show-tooltip="false" :style="{width:'40%',float:'left'}" :step="0.05" :max="1" :min="0.05" ></el-slider>
-                <div class="sliderValue" contenteditable="true">{{eps}}</div>
+                <div class="demonstration">Method:</div>
+                <el-select v-model="currentClusteringMethod" placeholder="Select" size="mini" style="width:40%;float:left;font-size:12px;margin-bottom:8px">
+                    <el-option
+                        v-for="(value,index) in clusteringMethod"
+                        :key="index"
+                        :label="value"
+                        :value="value"
+                        >
+                    </el-option>
+                </el-select>
             </div>
+           
         </div>
 
         <div class="sliderBox">
@@ -74,7 +82,7 @@
                     </el-option>
                 </el-select>
             </div>
-            <div class="sliderItem">
+            <!-- <div class="sliderItem">
                 <div class="demonstration">Method:</div>
                 <el-select v-model="currentClusteringMethod" placeholder="Select" size="mini" style="width:40%;float:left;font-size:12px;margin-bottom:8px">
                     <el-option
@@ -91,7 +99,7 @@
                 <div class="demonstration">Color:</div>
                 <div v-for="(value,index) in colorMap" :key="index" :style="{background:value}" class="colorCircle"></div>
                 <ColorPicker @change="pickColor" style="margin:8px 0 0 4px"></ColorPicker>
-            </div>
+            </div> -->
         </div>
     </div>
 </template>
@@ -107,7 +115,7 @@ export default {
             smaplingMethods:['BNS','RS','SAA-NBS'],
             route:{'BNS':'bns_sampling','RS':'random_sampling','SAA-NBS':'super_bns_sampling'},
             currentSamplingMethod:'',
-            clusteringMethod:['N-Breaks','U-Breaks','Linear'],
+            clusteringMethod:['N-Breaks','U-Breaks','Linear', 'K-Means'],
             eps:0.5,
             min_radius:1,
             top_k:100,
@@ -193,12 +201,39 @@ export default {
             })
         },
         clustering(){
-            const n_cluster = Number(document.getElementById('n_cluster').innerHTML);
-            this.$axios.post('get_cluster_data',{fileName:this.fileName,n_cluster:n_cluster,
-            color_count:this.$store.getters.pointClusterColor.length})
-            .then(res=>{
-                this.$store.dispatch('updateOriginData',res.data.data);
-            })
+            const data = [];
+            const copyData = [];
+            this.$store.getters.originData.forEach(v=>{
+                data.push(v.value);
+                copyData.push(v);
+            });
+
+            if(this.currentClusteringMethod === 'K-Means' || this.currentClusteringMethod === 'N-Breaks'){
+                this.$axios.post('get_cluster_data', {method: this.currentClusteringMethod, n_cluster: this.n_cluster, originData: data})
+                .then(res=>{
+                    const labels = res.data.data.labels;
+                    copyData.forEach((v, index) => {
+                        v.label = labels[index];
+                    });
+                    this.$store.dispatch('updateOriginData',copyData);
+                })
+            }
+            else if(this.currentClusteringMethod === 'U-Breaks'){
+                const v_min_max = this.$d3.extent(data);
+                let vScaleLinear = this.$d3.scaleQuantize(v_min_max,this.$d3.range(this.n_cluster));
+                copyData.forEach(v => {
+                    v.label = vScaleLinear(v.value);
+                })
+                this.$store.dispatch('updateOriginData',copyData);
+            }
+            else if(this.currentClusteringMethod === 'Linear'){
+                const v_min_max = this.$d3.extent(data);
+                let vScaleLinear = this.$d3.scaleLinear([v_min_max[0], v_min_max[1]], [0, this.n_cluster - 1]);
+                copyData.forEach(v => {
+                    v.label = Math.round(vScaleLinear(v.value));
+                })
+                this.$store.dispatch('updateOriginData',copyData);
+            }
         },
         sampling(){
             const n_cluster = Number(document.getElementById('n_cluster').innerHTML);
@@ -224,6 +259,7 @@ export default {
         }
         
     },
+
 }
 </script>
 
