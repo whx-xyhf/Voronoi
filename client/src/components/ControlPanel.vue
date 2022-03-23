@@ -1,7 +1,11 @@
 <template>
     <div class="control">
-        <div id="fileName">{{fileName}}</div><div class="fileIcon"><i class="el-icon-folder-opened" @click="clickFile"></i></div>
-        <input type="file" name="" id="fileInput" @change="uploadFile($event)">
+        
+        <div>
+            <div id="fileName">{{fileName}}</div>
+            <div class="fileIcon"><i class="el-icon-folder-opened" @click="clickFile"></i></div>
+            <input type="file" name="" id="fileInput" @change="uploadFile($event)">
+        </div>
 
          <div class="sliderBox">
             <div class="sliderTitle el-icon-arrow-down">&nbsp;&nbsp;Data Propressing &nbsp;</div>  <div class=" runIcon el-icon-video-play" title="Run" @click="clustering"></div>
@@ -68,7 +72,7 @@
             </div>
         </div>
 
-        <div class="sliderBox" style="border-bottom:none">
+        <div class="sliderBox">
             <div class="sliderTitle el-icon-arrow-down">&nbsp;&nbsp;Color Optimization &nbsp;</div>
             <div class="sliderItem">
                 <div class="demonstration">Layer:</div>
@@ -101,12 +105,24 @@
                 <ColorPicker @change="pickColor" style="margin:8px 0 0 4px"></ColorPicker>
             </div> -->
         </div>
+
+        
+        <!-- Distribution View  -->
+        <div style="flex:1;padding-top:10px;">
+            <div class="sliderTitle el-icon-arrow-down">&nbsp;&nbsp;Distribution &nbsp;</div>
+            <div style="clear:both;height:90%;">
+                <Distribution/>
+            </div>
+        </div>
+
     </div>
 </template>
 
 <script>
+import Distribution from "./Distribution"
 export default {
     name:'ControlPanel',
+    components: {Distribution},
     data(){
         return {
             n_cluster:16,
@@ -265,10 +281,12 @@ export default {
 
 <style scoped>
 .control{
+    display: flex;
+    flex-direction: column;
     height:100%;
     width: 100%;
     padding: 2px;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
     overflow-y: auto;
     overflow-x: hidden;
 }
