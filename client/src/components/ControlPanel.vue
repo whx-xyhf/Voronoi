@@ -271,18 +271,40 @@ export default {
         },
         sampling(){
             const n_cluster = Number(document.getElementById('n_cluster').innerHTML);
-            this.$axios.post(this.route[this.currentSamplingMethod], {
-                rate:      this.sampling_rate/100,
-                data:      this.originData,
-                n_cluster: n_cluster,
-                min_r:     this.min_radius,
-                flag:      true,
-                bns_radius:this.bns_radius,
-            })
-            .then(res=>{
-                this.$store.dispatch('updateSamplingData',res.data.data);
-                console.log(res.data.data)
-            })
+            let data = this.originData
+            if(data[0].kde) {
+                this.$axios.post(this.route[this.currentSamplingMethod], {
+                    rate:      this.sampling_rate/100,
+                    data:      this.originData,
+                    n_cluster: n_cluster,
+                    min_r:     this.min_radius,
+                    flag:      true,
+                    bns_radius:this.bns_radius,
+                })
+                .then(res=>{
+                    this.$store.dispatch('updateSamplingData',res.data.data);
+                    console.log(res.data.data)
+                })
+            } else {
+                this.$axios.post("kde", {data}).then(res=>{
+                    let kde = res.data.data.kde
+                    for(let i=0; i<kde.length; ++i) {
+                        data[i].kde = kde[i]
+                    }
+                    this.$axios.post(this.route[this.currentSamplingMethod], {
+                        rate:      this.sampling_rate/100,
+                        data:      data,
+                        n_cluster: n_cluster,
+                        min_r:     this.min_radius,
+                        flag:      true,
+                        bns_radius:this.bns_radius,
+                    })
+                    .then(res=>{
+                        this.$store.dispatch('updateSamplingData',res.data.data);
+                    })
+
+                })
+            }
         },
         shapeOptimization(){
             if(this.currentSamplingMethod=='SAA-NBS'){

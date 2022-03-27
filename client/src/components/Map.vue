@@ -7,14 +7,12 @@
       <button @click="refresh" class="el-icon-refresh"></button>
     </div>
     <div class="colorMap" v-show="layer=='Voronoi'">
-        <svg id="svg_color">
-         
-        </svg>
+        <svg id="svg_color"></svg>
     </div>
     <div class="dataInfo">
-        <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Origin Nodes:{{originData?originData.length:0}}</div>
-        <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Sampling Nodes:{{samplingData.length}}</div>
-        <div style="font-size:12px;float:left;width:100%;text-align:left;margin-bottom:12px">Final Clusters:{{max_label}}</div>
+        <div class="info-cell">Origin Nodes:{{originData?originData.length:0}}</div>
+        <div class="info-cell">Sampling Nodes:{{samplingData.length}}</div>
+        <div class="info-cell">Final Clusters:{{max_label}}</div>
     </div>
   </div>
 </template>
@@ -771,5 +769,12 @@ export default {
   font-weight: bold;
   width:170px;
   z-index:4;
+}
+.dataInfo .info-cell {
+  font-size:12px;
+  float:left;
+  width:100%;
+  text-align:left;
+  margin-bottom:12px;
 }
 </style>

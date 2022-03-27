@@ -1,18 +1,20 @@
 import json
 from sampling.bns import BNS
-from sampling.kde import get_kde
+from sampling.kde import get_kde, get_population
 
 def apply_bns(data, R):
 
     origin_data_dic = {i['id']: i for i in data}
-    matrix, population = get_kde(data)
+    population = get_population(data)
+    matrix = [d["kde"] for d in data]
+
     bns = BNS(matrix, R=R)
     seeds, disks = bns.apply_sample()
     data_processed = []
 
     populationDic = {i[0]: i for i in population}
 
-    for disk in disks:
+    for i, disk in enumerate(disks):
         value = 0
         for index in disk["children"]:
             value += populationDic[index][3]
@@ -27,7 +29,7 @@ def apply_bns(data, R):
             "diskId": disk["id"],
             "children": disk["children"],
             "radius": disk["r"],
-            "averVal": value / len(disk["children"])
+            "averVal": value / len(disk["children"]),
         })
 
     return data_processed, bns

@@ -1,10 +1,3 @@
-'''
-Author: miaobuao
-Date: 2022-03-23 21:58:55
-LastEditors: miaobuao
-LastEditTime: 2022-03-27 00:49:42
-FilePath: \voronoi2\server\sampling\kde.py
-'''
 import sys
 import numpy as np
 import time
@@ -14,7 +7,6 @@ from scipy import stats
 
 """ 生成核密度矩阵 （耗时长） """
 def build_matrix(population):
-    time_start = time.time()
     a1 = []
     a2 = []
     a3 = []
@@ -39,7 +31,6 @@ def build_matrix(population):
         print(values)
     Z = np.reshape(kernel(positions).T, X.shape)
 
-    time_end = time.time()
 
     kde = [kernel([p[1], p[2]])[0] for p in population]
     m4 = np.asarray(kde)
@@ -47,18 +38,18 @@ def build_matrix(population):
     mid = np.asarray(indexes)
 
     matrix = np.vstack([mid, m1, m2, m3, m4])
-
     return matrix.T
-    
+
 
 def normalizated_array(array):
     m3 = [d[2] for d in array]
     vmin = min(m3)
     vmax = max(m3)
     vp = vmax - vmin
-
     return [[d[0], d[1], (d[2] - vmin) / vp] for d in array]
 
+def get_population(data):
+    return [[d['id'], d['lat'], d['lng'], d['value']] for d in data]
 
 def get_kde(data_snapshot):
 

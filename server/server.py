@@ -8,6 +8,8 @@ from sampling.sample_zdhxbns import apply_ZDHXBNS
 import random
 from sklearn.cluster import KMeans
 
+from sampling.kde import get_kde
+
 globalConfig = {'jnb': None, 'values': [], 'hull': []}
 
 app = Flask(__name__)
@@ -27,6 +29,17 @@ def upload_file():
     file = request.files.get('file')
     res = make_response(jsonify({'code': 200, 'data': file.read().decode()}))
     return res
+
+@app.route("/kde", methods=["POST"])
+def kde():
+    data = request.get_json()["data"]
+    kde, _ = get_kde(data)
+    return make_response(jsonify({
+        'code': 200,
+        'data':{
+            "kde": kde.tolist()
+        }
+    }))
 
 
 @app.route("/get_origin_data", methods=['POST'])
@@ -70,29 +83,10 @@ def get_cluster_data():
 @app.route("/bns_sampling", methods=['POST', 'GET'])
 def bns_sampling():
     if request.method == 'POST':
-        # file_name = request.get_json()['fileName']
         data = request.get_json()['data']
         bns_radius = request.get_json()['bns_radius']
-        # flag = request.get_json()['flag']
-        # n_cluster = request.get_json()['n_cluster']
-
         data_processed, bns = apply_bns(data, bns_radius)
         rate = bns.rate
-        #     rate = bns.rate
-        # if flag:
-        #     with open(f'./data/{file_name}$class={n_cluster}.json', 'r') as fr:
-        #         data = json.load(fr)
-        #     data_dic = {i['id']: i['label'] for i in data}
-        #     with open(f'./data/bns_{file_name}$rate={r}$count=0.json') as fr:
-        #         data_processed = json.load(fr)
-        #         rate = r
-        #         for i in range(len(data_processed)):
-        #             data_processed[i]['label'] = data_dic[data_processed[i]['id']]
-        #         # for i in range(len(data_processed)):
-        #         #     data_processed[i]['label'] = globalConfig['jnb'].predict(data_processed[i]['value'])
-        # else:
-        #     data_processed, bns = apply_bns(file_name, r)
-        #     rate = bns.rate
         res = make_response(jsonify({'code': 200, 'data': data_processed, 'rate': rate}))
     return res
 
