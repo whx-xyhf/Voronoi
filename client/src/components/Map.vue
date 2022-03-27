@@ -14,6 +14,13 @@
         <div class="info-cell">Sampling Nodes:{{samplingData.length}}</div>
         <div class="info-cell">Final Clusters:{{max_label}}</div>
     </div>
+    
+    <select id="select-state" v-model="state" slot="title" style="float:right;height:100%;">
+        <option value="init" style="display:none">Init</option>
+        <option value="origin">Origin</option>
+        <option value="sampled">Sampled</option>
+    </select>
+
   </div>
 </template>
 <script>
@@ -714,7 +721,7 @@ export default {
 
 };
 </script>
-<style  scoped>
+<style>
 #map {
   width: 100%;
   height: 100%;
@@ -776,5 +783,13 @@ export default {
   width:100%;
   text-align:left;
   margin-bottom:12px;
+}
+.mapboxgl-control-container {
+  display: none !important;
+}
+#select-state {
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 </style>

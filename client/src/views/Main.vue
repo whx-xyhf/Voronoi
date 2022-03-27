@@ -1,60 +1,42 @@
 <template>
-    <div class="main">
-        <div class="left">
-            <Panel :title="'Control Panel'" :panelHeight="'100%'" :panelWidth="'100%'" style="float:left;" :titleStyle="{'height':titleHeight+'px','line-height':titleHeight+'px'}">
-                <ControlPanel slot="panelBody"/>
-            </Panel>
-        </div>
-        <div class="right">
-            <Panel :title="'Map'" :panelHeight="'100%'" :panelWidth="'100%'" style="float:left;" :titleStyle="{'height':titleHeight+'px','line-height':titleHeight+'px'}">
-                <select name="" id="" v-model="state" slot="title" style="float:right;height:100%;">
-                    <option value="init" style="display:none">Init</option>
-                    <option value="origin">Origin</option>
-                    <option value="sampled">Sampled</option>
-                </select>
-                <Map slot="panelBody"/>
-            </Panel>
-        </div>
-    </div>
+<div id="main">
+  <div id="title">APPP</div>
+  <div id="body">
+    <Left></Left>
+    <Right></Right>
+  </div>
+</div>
 </template>
 
 <script>
-import Map from '../components/Map.vue'
-import ControlPanel from '../components/ControlPanel.vue'
+import Left from "../UI/Left.vue"
+import Right from "../UI/Right.vue"
+
 export default {
-    name:'Main',
-    components:{Map,ControlPanel},
-    computed:{
-        state:{
-            get(){
-                return this.$store.getters.sampleState;
-            },
-            set(value){
-                this.$store.dispatch('updateSampleState',value);
-            }
-        }
-    },
-    data(){
-        return {
-            titleHeight:this.$store.state.titleHeight,
-        }
-    },
+components:{Left, Right}
 }
 </script>
 
-<style scoped>
-.main{
-    height:100%;
-    width: 100%;
+<style>
+#main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
-.left{
-  float:left;
-  width:22%;
-  height:100%;
+#main #title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 35px;
+  font-size: 22px;
+  font-weight: bolder;
+  color: #fff;
+  background-color: rgb(7, 50, 116);
+  padding-left: 6px;
 }
-.right{
-  float:left;
-  width:78%;
-  height:100%;
+#main #body {
+  flex: auto;
+  display: flex;
+  flex-direction: row;
 }
 </style>

@@ -1,15 +1,28 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Main from '../views/Main'
-
+import __Main from '../views/__Main'
+import Main from "../views/Main.vue"
+import Upload from "../components/Sidebar/upload.vue"
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path:'/',
-    name:'main',
-    component:Main
+    name:'Main',
+    component:Main,
+    children: [
+      {
+        path: "/upload",
+        name: "upload",
+        component: Upload,
+      }
+    ]
+  },
+  {
+    path: "/__",
+    name: '__main',
+    component: __Main,
   }
 ]
 
