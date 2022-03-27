@@ -1,6 +1,39 @@
 import json
+
 from sampling.zdhxbns import ZDHXBNS
 import time
+from sampling.kde import get_kde
+
+def apply_ZDHXBNS(data, R, min_R_rate):
+
+    origin_data_dic = {i['id']: i for i in data}
+    matrix, population = get_kde(data)
+    matrix = matrix.tolist()
+    for i in range(len(matrix)):
+        matrix[i].append(origin_data_dic[int(matrix[i][0])]['label'])
+    populationDic = {i[0]: i for i in population}
+
+    sssssbns = ZDHXBNS(matrix, R=R, min_r_rate=min_R_rate)
+    seeds, disks = sssssbns.apply_sample()
+    # print(len(seeds), len(disks))
+    data_processed = []
+
+    for disk in disks:
+        p = populationDic[disk["seedId"]]
+        point = {
+            "id": p[0],
+            "lat": p[1],
+            "lng": p[2],
+            "value": p[3],
+            "label": origin_data_dic[p[0]]['label'],
+            # 以下是新的字段
+            "diskId": disk["id"],
+            "children": disk["children"],
+            "radius": disk["r"],
+        }
+
+        data_processed.append(point)
+    return data_processed, sssssbns
 
 
 def translate(array, target_left, target_right):

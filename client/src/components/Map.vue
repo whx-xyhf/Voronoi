@@ -19,6 +19,7 @@
   </div>
 </template>
 <script>
+/* eslint-disable */
 import mapboxgl from "mapbox-gl";
 // import "mapbox-gl/dist/mapbox-gl.css";
 // import polybool from "polybooljs";
@@ -165,7 +166,7 @@ export default {
           this.timers.push(
               setTimeout(() => {
                 try {
-                  ctx.fillStyle =colors[locData[i]['label']%colors.length];
+                  ctx.fillStyle = colors[locData[i]['label']%colors.length];
                   ctx.beginPath();
                   ctx.arc(locDataPoints[i].x, locDataPoints[i].y, radius, 0, 2 * Math.PI);
                   ctx.fill();
@@ -204,66 +205,76 @@ export default {
 
       const voronoi = delaunay.voronoi([0,0,canvas.clientWidth,canvas.clientHeight]);
       let values = [];
-      if(isSampling){
-        //计算每个面片包含的点属性均值
-        const originLocData=JSON.parse(JSON.stringify(this.locData));
-        values = pointData.map((v,j)=>{
-          let polygons=voronoi.cellPolygon(j);
-          let value=0;
-          let count=0;
-          for(let i=0;i<originLocData.length;i++){
-            let point = this.map.project([
-              originLocData[i].lng,
-              originLocData[i].lat,
-            ]);
-            if(this.isInPolygon([point.x,point.y],polygons)){
-              value+=originLocData[i].value;
-              count+=1;
-              originLocData.splice(i,1);
-              i--;
-            }
-          }
-          return value/count;
-        })        
-      }
-      else{
-        values = this.values;
-      }
-       //根据不同的方法映射面片颜色
-        if(this.currentColorMapMethod=='N-Breaks'){
-          this.$axios.post('create_sampling_color_label',{values,n_cluster:this.colorMap.length})
-          .then(res=>{
-            let labels=res.data.data;
-            const polygon=pointData.map((v,i)=>({
-              polygons:voronoi.cellPolygon(i),
-              value:v.value,
-              pvalue:values[i],
-              label:labels[i],
-            }))
-            this.voronoiPolygons=polygon;
-          })
-        }
-        else if(this.currentColorMapMethod=='U-Breaks'){
-           const v_min_max = this.$d3.extent(values);
-          let vScaleLinear = this.$d3.scaleQuantize(v_min_max,this.$d3.range(this.colorMap.length));
-          const polygon=pointData.map((v,i)=>({
-              polygons:voronoi.cellPolygon(i),
-              value:v.value,
-              label:vScaleLinear(v.pvalue),
-              pvalue:values[i],
-            }))
-            this.voronoiPolygons=polygon;
-        }else{
-          const v_min_max = this.$d3.extent(values);
-          let vScaleLinear = this.$d3.scaleLinear([v_min_max[0],v_min_max[1]],[0,this.colorMap.length-1]);
-          const polygon=pointData.map((v,i)=>({
-              polygons:voronoi.cellPolygon(i),
-              value:v.value,
-              label:Math.round(vScaleLinear(v.pvalue)),
-              pvalue:values[i],
-            }))
-            this.voronoiPolygons=polygon;
-        }
+      // console.log(this.locData)
+      const polygon = pointData.map((v, i)=>({
+        polygons: voronoi.cellPolygon(i),
+        value   : v.value,
+        label   : v.label,
+      }))
+      this.voronoiPolygons = polygon;
+
+      // if(isSampling){
+      //   //计算每个面片包含的点属性均值
+      //   const originLocData=JSON.parse(JSON.stringify(this.locData));
+      //   values = pointData.map((v,j)=>{
+      //     let polygons=voronoi.cellPolygon(j);
+      //     let value=0;
+      //     let count=0;
+      //     for(let i=0;i<originLocData.length;i++){
+      //       let point = this.map.project([
+      //         originLocData[i].lng,
+      //         originLocData[i].lat,
+      //       ]);
+      //       if(this.isInPolygon([point.x,point.y],polygons)){
+      //         value+=originLocData[i].value;
+      //         count+=1;
+      //         originLocData.splice(i,1);
+      //         i--;
+      //       }
+      //     }
+      //     return value/count;
+      //   })        
+      // }
+      // else{
+      //   values = this.values;
+      // }
+      //  //根据不同的方法映射面片颜色
+      //   if(this.currentColorMapMethod=='N-Breaks'){
+      //     this.$axios.post('create_sampling_color_label',{values,n_cluster:this.colorMap.length})
+      //     .then(res=>{
+      //       console.log("n-break: ", res.data.data)
+      //       let labels=res.data.data;
+      //       const polygon=pointData.map((v,i)=>({
+      //         polygons:voronoi.cellPolygon(i),
+      //         value:v.value,
+      //         pvalue:values[i],
+      //         label:labels[i],
+      //       }))
+      //       this.voronoiPolygons=polygon;
+      //     })
+      //   }
+      //   else if(this.currentColorMapMethod=='U-Breaks'){
+      //     const v_min_max = this.$d3.extent(values);
+      //     console.log(v_min_max, this.colorMap.length)
+      //     let vScaleLinear = this.$d3.scaleQuantize(v_min_max,this.$d3.range(this.colorMap.length));
+      //     const polygon=pointData.map((v,i)=>({
+      //         polygons:voronoi.cellPolygon(i),
+      //         value:v.value,
+      //         label:vScaleLinear(v.pvalue),
+      //         pvalue:values[i],
+      //     }))
+      //     this.voronoiPolygons=polygon;
+      //   }else{
+      //     const v_min_max = this.$d3.extent(values);
+      //     let vScaleLinear = this.$d3.scaleLinear([v_min_max[0],v_min_max[1]],[0,this.colorMap.length-1]);
+      //     const polygon=pointData.map((v,i)=>({
+      //         polygons:voronoi.cellPolygon(i),
+      //         value:v.value,
+      //         label:Math.round(vScaleLinear(v.pvalue)),
+      //         pvalue:values[i],
+      //       }))
+      //       this.voronoiPolygons=polygon;
+      //   }
       
     },
 
@@ -275,6 +286,7 @@ export default {
           this.$axios.post('create_sampling_color_label',{values,n_cluster:this.colorMap.length})
           .then(res=>{
             let labels=res.data.data;
+            console.log("labels", labels)
             const polygon=this.voronoiPolygons.map((v,i)=>({
               polygons:v.polygons,
               value:v.value,
@@ -358,76 +370,104 @@ export default {
       this.clearTimers();
       
       ctx.lineWidth=0.8;
-      if(hull.length>0){
-        let subHull=hull[0].map(v=>{
-          let p=this.map.project(v);
-          return [p.x,p.y];
-        });
-        // subHull =new Path2D(this.$d3.line().curve(this.$d3.curveCardinal).x((d) => d[0]).y((d) => d[1])(subHull));
-        subHull.push(subHull[0]);
-        ctx.beginPath();
-        for(let i=0;i<subHull.length;i++){
-          if(i)
-            ctx.lineTo(subHull[i][0],subHull[i][1]);
-          else
-            ctx.moveTo(subHull[i][0],subHull[i][1]);
-        }
-        ctx.stroke();
-        ctx.clip();
-        // ctx.stroke(subHull);
-        // ctx.clip(subHull);
-      }
-      if(this.colorMap.length>0){
-        voronoiPolygons.forEach(({ polygons, label }) => {
-          if (polygons) {
-            this.timers.push(
-              setTimeout(() => {
-                try {
-                  // const color = this.valueScale(averVal);
-                  ctx.fillStyle = this.colorMap[label];
-                  ctx.strokeStyle = "rgb(110,110,110)";
-                  ctx.beginPath();
-                  polygons.forEach((p, i) => {
-                    if (i) {
-                      ctx.lineTo(p[0], p[1]);
-                    } else {
-                      ctx.moveTo(p[0], p[1]);                
-                    }
-                  });
-                  ctx.fill();
-                  ctx.stroke();
-                  ctx.closePath();
-                } catch(err) {console.log(err)}
-              }, 1 * parseInt(this.timers.length/5))
-            );
-          }
-        });
-      }
-      else{
-        voronoiPolygons.forEach(({ polygons }) => {
-          if (polygons) {
-            this.timers.push(
-              setTimeout(() => {
-                try {
-                  // const color = this.valueScale(averVal);
-                  ctx.strokeStyle = "rgb(110,110,110)";
-                  ctx.beginPath();
-                  polygons.forEach((p, i) => {
-                    if (i) {
-                      ctx.lineTo(p[0], p[1]);
-                    } else {
-                      ctx.moveTo(p[0], p[1]);                
-                    }
-                  });
-                  ctx.stroke();
-                  ctx.closePath();
-                } catch(err) {console.log(err)}
-              }, 1 * parseInt(this.timers.length/5))
-            );
-          }
-        });
-      }
+      // if(hull.length>0){
+      //   let subHull=hull[0].map(v=>{
+      //     let p=this.map.project(v);
+      //     return [p.x,p.y];
+      //   });
+      //   // subHull =new Path2D(this.$d3.line().curve(this.$d3.curveCardinal).x((d) => d[0]).y((d) => d[1])(subHull));
+      //   subHull.push(subHull[0]);
+      //   ctx.beginPath();
+      //   for(let i=0;i<subHull.length;i++){
+      //     if(i)
+      //       ctx.lineTo(subHull[i][0],subHull[i][1]);
+      //     else
+      //       ctx.moveTo(subHull[i][0],subHull[i][1]);
+      //   }
+      //   ctx.stroke();
+      //   ctx.clip();
+      //   // ctx.stroke(subHull);
+      //   // ctx.clip(subHull);
+      // }
+      // if(this.colorMap.length>0){
+      //   voronoiPolygons.forEach(({ polygons, label }) => {
+      //     if (polygons) {
+      //       this.timers.push(
+      //         setTimeout(() => {
+      //           try {
+      //             // const color = this.valueScale(averVal);
+      //             ctx.fillStyle = this.colorMap[label];
+      //             ctx.strokeStyle = "rgb(110,110,110)";
+      //             ctx.beginPath();
+      //             polygons.forEach((p, i) => {
+      //               if (i) {
+      //                 ctx.lineTo(p[0], p[1]);
+      //               } else {
+      //                 ctx.moveTo(p[0], p[1]);                
+      //               }
+      //             });
+      //             ctx.fill();
+      //             ctx.stroke();
+      //             ctx.closePath();
+      //           } catch(err) {console.log(err)}
+      //         }, 1 * parseInt(this.timers.length/5))
+      //       );
+      //     }
+      //   });
+      // }
+      // else{
+      //   voronoiPolygons.forEach(({ polygons }) => {
+      //     if (polygons) {
+      //       this.timers.push(
+      //         setTimeout(() => {
+      //           try {
+      //             // const color = this.valueScale(averVal);
+      //             ctx.strokeStyle = "rgb(110,110,110)";
+      //             ctx.beginPath();
+      //             polygons.forEach((p, i) => {
+      //               if (i) {
+      //                 ctx.lineTo(p[0], p[1]);
+      //               } else {
+      //                 ctx.moveTo(p[0], p[1]);                
+      //               }
+      //             });
+      //             ctx.stroke();
+      //             ctx.closePath();
+      //           } catch(err) {console.log(err)}
+      //         }, 1 * parseInt(this.timers.length/5))
+      //       );
+      //     }
+      //   });
+      // }
       
+      // let minmax = this.$d3.extent(voronoiPolygons.map(d=>d.label))
+      // console.log(minmax)
+      // let color = this.$d3.scaleLinear(minmax, ["red", 'green'])
+      let colors = this.pointClusterColor
+      voronoiPolygons.forEach(({ polygons, label }) => {
+        if (polygons) {
+          this.timers.push(
+            setTimeout(() => {
+              try {
+                // const color = this.valueScale(averVal);
+                ctx.strokeStyle = "rgb(110,110,110)";
+                ctx.fillStyle = colors[label % colors.length]
+                ctx.beginPath();
+                polygons.forEach((p, i) => {
+                  if (i) {
+                    ctx.lineTo(p[0], p[1]);
+                  } else {
+                    ctx.moveTo(p[0], p[1]);                
+                  }
+                });
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+              } catch(err) {console.log(err)}
+            }, 1 * parseInt(this.timers.length/5))
+          );
+        }
+      });
   },
   addHull(){
       const oldcanvas = document.getElementById('hull');
@@ -589,6 +629,7 @@ export default {
       if(this.state=='origin')
       {
         if(this.layer == "Points"){
+          this.drawPoint();
           this.map.on("zoomend", () => {
           this.drawPoint();
           });
@@ -597,6 +638,7 @@ export default {
           });
         }
         else if(this.layer=="Voronoi"){
+          this.createVoronoi();
           this.map.on("zoomend", () => {
             this.createVoronoi();
           });
@@ -631,6 +673,7 @@ export default {
       let map=document.getElementById('map');
       map.removeChild(oldCanvas);
       if(newLayer == "Points"){
+        this.drawPoint()
         this.map.on("zoomend", () => {
           this.drawPoint();
         });
@@ -639,6 +682,7 @@ export default {
         });
       }
       else if(newLayer=="Voronoi"){
+        this.createVoronoi(this.state=='sampled'?true:false);
         this.map.on("zoomend", () => {
           this.createVoronoi(this.state=='sampled'?true:false);
         });
@@ -650,6 +694,7 @@ export default {
     state(){
       if(this.layer == "Points"){
         console.log(this.state)
+        this.drawPoint();
         this.map.on("zoomend", () => {
         this.drawPoint();
         });
@@ -658,6 +703,7 @@ export default {
         });
       }
       else if(this.layer=="Voronoi"){
+        this.createVoronoi(this.state=='sampled'?true:false);
         this.map.on("zoomend", () => {
           this.createVoronoi(this.state=='sampled'?true:false);
         });

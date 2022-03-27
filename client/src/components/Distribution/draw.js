@@ -2,12 +2,64 @@
 let d3 = require("d3")
 import {divideRangeLinear} from "../../lib/SamplePoints"
 
+const THEME_COLOR = "#5092CE"
 let marginLeft = 40,
     marginRight = 10,
     marginTop = 10,
     marginBottom = 30;
 
 function label_draw(data, svg) {
+    const width = svg.clientWidth,
+        height = svg.clientHeight,
+        canvas = d3.select(svg);
+    
+    canvas.html('')
+    let g = {
+        bar: selectOne(canvas, ".bar-container").attr('class', "bar-container"),
+        axis: {
+            x: selectOne(canvas, ".axis-x").attr('class', "axis-x"),
+            y: selectOne(canvas, '.axis-y').attr('class', "axis-y"),
+        },
+    }
+    const BAR_PADDING = 2,
+        keys = Object.keys(data),
+        X = d3.scaleBand(d3.range(keys.length), [0, width - marginLeft - marginRight]),
+        Y = d3.scaleLinear(
+            [d3.min(keys, k=>data[k]), d3.max(keys, k=>data[k])],
+            [height - marginBottom - marginTop, 0]
+        );
+    let CELL_WIDTH = X(1) - X(0);
+    if(CELL_WIDTH - 1 > BAR_PADDING) {
+        CELL_WIDTH -= BAR_PADDING
+    }
+    g.bar
+        .attr("transform", `translate(${marginLeft}, ${marginTop})`)
+        .selectAll("rect")
+        .data(keys)
+        .join("rect")
+            .attr("x", (_, i)=>X(i) + BAR_PADDING/2)
+            .attr('y', k=>Y(data[k]))
+            .attr('fill', THEME_COLOR)
+            .attr('width', CELL_WIDTH)
+            .attr('height', k=>height - marginBottom - marginTop - Y(data[k]))
+    const n_ticks = 10;
+    let ticks;
+    if(keys.length <= n_ticks) {
+        ticks = keys
+    } else {
+        // // 取首尾+中间四位， 共n_ticks个tick
+        // ticks = divideRangeLinear(n_ticks, [0, keys.length-1], 0)
+        ticks = step_pick(keys, parseInt(keys.length / n_ticks))
+    }
+    g.axis.x
+        .attr("transform", `translate(${marginLeft}, ${height - marginBottom})`)
+        .call(d3.axisBottom(X).tickValues(ticks))
+    g.axis.y
+        .attr("transform", `translate(${marginLeft}, ${marginTop})`)
+        .call(d3.axisLeft(Y))
+}
+
+function __label_draw(data, svg) {
     let width = svg.clientWidth,
         height = svg.clientHeight,
         canvas = d3.select(svg)
@@ -58,6 +110,15 @@ function label_draw(data, svg) {
         .attr('d', area(keys))
         .attr('fill', "#5092CE")
         .attr('opacity', 0.5)
+}
+
+
+function step_pick(arr, step) {
+    let res = []
+    for(let i=0; i<arr.length; i+=step) {
+        res.push(arr[i])
+    }
+    return res
 }
 
 function create_x_axis(g, x, ticks) {
@@ -128,7 +189,7 @@ function section_draw(data, dom) {
         // .attr('y', d=>height - marginBottom - bar_height(d/data.sum))
         .attr('y', d=>height - marginBottom - bar_height(d))
         .attr('width', cell_width)
-        .attr("fill", "#5092CE")
+        .attr("fill", THEME_COLOR)
         // .attr('height', d=>bar_height(d/data.sum))
         .attr('height', d=>bar_height(d))
 }

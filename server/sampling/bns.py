@@ -1,5 +1,6 @@
 from random import random as rand
 
+DEBUG = False
 
 """ 二维蓝噪声采样 """
 class BNS:
@@ -29,14 +30,16 @@ class BNS:
     def apply_sample(self):
         # 迭代
         while len(self.indexes["active"]) + len(self.indexes["ready"]) > 0:
-            print(len(self.indexes["active"]) + len(self.indexes["ready"]))
+            if DEBUG:
+                print(len(self.indexes["active"]) + len(self.indexes["ready"]))
             # 取一个种子点
             seed = self._get_random_point()
             if seed != -1:
                 self._create_disk(seed)
         all_count = len(self.points)
         sample_count = len(self.indexes['seed'])
-        print(f"all {all_count} sampling {sample_count} rate {sample_count/all_count}")
+        if DEBUG:
+            print(f"all {all_count} sampling {sample_count} rate {sample_count/all_count}")
         self.rate = round(sample_count/all_count, 2)
         return self.indexes["seed"], self.disks
 

@@ -1,3 +1,10 @@
+'''
+Author: miaobuao
+Date: 2022-03-23 21:58:55
+LastEditors: miaobuao
+LastEditTime: 2022-03-27 00:49:42
+FilePath: \voronoi2\server\sampling\kde.py
+'''
 import sys
 import numpy as np
 import time
@@ -53,31 +60,36 @@ def normalizated_array(array):
     return [[d[0], d[1], (d[2] - vmin) / vp] for d in array]
 
 
-if __name__ == "__main__":
-    
-    filename_origin = 'Density.json'
-    
-    with open("../data/" + filename_origin, mode='r') as f:
-        data_snapshot = json.load(f)
-
-    # [id, x, y, val]][]
-    values = [[d['id'], d['lat'], d['lng'], d['value']] for d in data_snapshot]
-    matrix = build_matrix(values)
-
-    with open("../data/kde_" + filename_origin, mode='w') as fout:
-        json.dump({
-            "population": values,
-            "matrix": matrix.tolist()
-        }, fout)
-
-    print(0)    # 程序运行完成
-
-    pass
-
-
 def get_kde(data_snapshot):
 
     values = [[d['id'], d['lat'], d['lng'], d['value']] for d in data_snapshot]
     matrix = build_matrix(values)
 
-    return matrix
+    return matrix, values
+
+if __name__ == "__main__":
+
+    with open("./server/dataSet/Density.json", 'r+') as f:
+        tmp = json.load(f)
+    matrix, population = get_kde(tmp)
+    print(matrix)
+    print(matrix.shape)
+
+    # filename_origin = 'Density.json'
+    # with open("../data/" + filename_origin, mode='r') as f:
+    #     data_snapshot = json.load(f)
+
+    # # [id, x, y, val]][]
+    # values = [[d['id'], d['lat'], d['lng'], d['value']] for d in data_snapshot]
+    # matrix = build_matrix(values)
+
+    # with open("../data/kde_" + filename_origin, mode='w') as fout:
+    #     json.dump({
+    #         "population": values,
+    #         "matrix": matrix.tolist()
+    #     }, fout)
+
+    # print(0)    # 程序运行完成
+
+    # pass
+

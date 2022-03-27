@@ -1,6 +1,9 @@
 import json
 import random
 
+from sampling.bns import BNS
+from sampling.kde import get_kde
+
 
 def load_kde_data(filename_origin):
     with open("../data/kde_" + filename_origin + ".json", mode='r') as fin:
@@ -15,7 +18,69 @@ def load_origin_data(filename_origin, n_cluster):
     return population
 
 
-def apply_super_bns(population, method, rate, c):
+def apply_super_bns(data, rate):
+    matrix, population = get_kde(data)
+    populationDic = {i['id']: [i['id'], i['lat'], i['lng'], i['value']] for i in data}
+    
+    bns = BNS(matrix, R=rate)
+    seeds, disks = bns.apply_sample()
+
+    data_processed = []
+
+    for disk in disks:
+        value = 0
+        labels = {}
+        max_count = 0
+        max_label = -1
+        for index in disk["children"]:
+            value += populationDic[index][3]
+            labels[populationDic[index][4]] = labels.get(populationDic[index][4], [])
+            labels[populationDic[index][4]].append(index)
+
+        for key in labels:
+            if len(labels[key]) > max_count:
+                max_count = len(labels[key])
+                max_label = key
+        lat = 0
+        lng = 0
+        distance = []
+        if max_label != -1:
+            percent = len(labels[max_label]) / len(disk["children"])
+            if 1 / 2 <= percent <= 2 / 3:
+                for i in labels[max_label]:
+                    lat += populationDic[i][1]
+                    lng += populationDic[i][2]
+                lat /= len(labels[max_label])
+                lng /= len(labels[max_label])
+                for i in labels[max_label]:
+                    distance.append({'id': i, 'distance': ((lat - populationDic[i][1]) ** 2
+                                                           + (lng - populationDic[i][2]) ** 2) ** 0.5})
+                distance.sort(key=lambda x: x['distance'])
+                p = populationDic[distance[0]['id']]
+            else:
+                p = populationDic[disk["id"]]
+        else:
+            p = populationDic[disk["id"]]
+        center = populationDic[disk["id"]]
+
+        data_processed.append({
+            "id": p[0],
+            "lat": p[1],
+            "lng": p[2],
+            "value": p[3],
+            # 以下是新的字段
+            "diskId": disk["diskId"],
+            "children": disk["children"],
+            "radius": disk["radius"],
+            "averVal": value / len(disk["children"]),
+            "center": center[0]
+        })
+
+    return data_processed, bns
+
+
+
+def __apply_super_bns(population, method, rate, c):
     populationDic = {i['id']: [i['id'], i['lat'], i['lng'], i['value'], i['vLabel']] for i in population}
     with open(f'../data/{method}_{filename_origin}$rate={rate}$count={c}.json', 'r') as fr:
         disks = json.load(fr)

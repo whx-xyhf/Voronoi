@@ -50,6 +50,11 @@
                 <div class="sliderValue">{{sampling_rate}}%</div>
             </div>
             <div class="sliderItem">
+                <div class="demonstration">BNS Radius:</div>
+                <el-slider v-model="bns_radius" :show-tooltip="false" :style="{width:'40%',float:'left'}" :max="1" :min="0.01" :step="0.01"></el-slider>
+                <div class="sliderValue">{{bns_radius}}</div>
+            </div>
+            <div class="sliderItem">
                 <div class="demonstration">Min Radius:</div>
                 <el-slider v-model="min_radius" :show-tooltip="false" :style="{width:'40%',float:'left'}" :max="2" :min="0" :step="0.05" :disabled="currentSamplingMethod!='SAA-NBS'"></el-slider>
                 <div class="sliderValue">{{min_radius}}</div>
@@ -119,6 +124,7 @@
 </template>
 
 <script>
+import {mapGetters} from "vuex"
 import Distribution from "./Distribution"
 export default {
     name:'ControlPanel',
@@ -127,6 +133,7 @@ export default {
         return {
             n_cluster:16,
             sampling_rate:100,
+            bns_radius: 0.01,
             LayerList:['Points','Voronoi'],
             smaplingMethods:['BNS','RS','SAA-NBS'],
             route:{'BNS':'bns_sampling','RS':'random_sampling','SAA-NBS':'super_bns_sampling'},
@@ -139,6 +146,17 @@ export default {
         }
     },
     computed:{
+        ...mapGetters([
+            "fileName",
+            "originData",
+            "samplingData",
+            "colorMap",
+            "opacity",
+            "strokeWidth",
+            "layer",
+            "currentColorMapMethod",
+            "pointClusterColor",
+        ]),
         fileName:{
             get(){
                 return this.$store.getters.fileName;
@@ -253,10 +271,17 @@ export default {
         },
         sampling(){
             const n_cluster = Number(document.getElementById('n_cluster').innerHTML);
-            this.$axios.post(this.route[this.currentSamplingMethod],{rate:this.sampling_rate/100,
-            fileName:this.$store.getters.fileName,n_cluster:n_cluster,min_r:this.min_radius,flag:true})
+            this.$axios.post(this.route[this.currentSamplingMethod], {
+                rate:      this.sampling_rate/100,
+                data:      this.originData,
+                n_cluster: n_cluster,
+                min_r:     this.min_radius,
+                flag:      true,
+                bns_radius:this.bns_radius,
+            })
             .then(res=>{
                 this.$store.dispatch('updateSamplingData',res.data.data);
+                console.log(res.data.data)
             })
         },
         shapeOptimization(){

@@ -1,8 +1,40 @@
 import json
 from sampling.bns import BNS
+from sampling.kde import get_kde
+
+def apply_bns(data, R):
+
+    origin_data_dic = {i['id']: i for i in data}
+    matrix, population = get_kde(data)
+    bns = BNS(matrix, R=R)
+    seeds, disks = bns.apply_sample()
+    data_processed = []
+
+    populationDic = {i[0]: i for i in population}
+
+    for disk in disks:
+        value = 0
+        for index in disk["children"]:
+            value += populationDic[index][3]
+        p = populationDic[disk["seedId"]]
+        data_processed.append({
+            "id": p[0],
+            "lat": p[1],
+            "lng": p[2],
+            "value": p[3],
+            "label": origin_data_dic[p[0]]['label'],
+            # 以下是新的字段
+            "diskId": disk["id"],
+            "children": disk["children"],
+            "radius": disk["r"],
+            "averVal": value / len(disk["children"])
+        })
+
+    return data_processed, bns
 
 
-def apply_bns(filename_origin, R):
+
+def __apply_bns(filename_origin, R):
 
     with open("./data/kde_" + filename_origin + ".json", mode='r') as fin:
         kde_data = json.load(fin)
